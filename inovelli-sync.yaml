@@ -17,7 +17,7 @@ blueprint:
         entity:
           filter:
             - domain: light
-              entity_id: "*dimmer*"
+              integration: zwave_js
 
 mode: single
 max_exceeded: silent
