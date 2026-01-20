@@ -1,7 +1,7 @@
 blueprint:
-  name: Inovelli Dimmer Sync
+  name: Dimmer/Area Brightness Sync
   description: >
-    Syncs brightness between an Inovelli Smart Switch's LED bar and all lights in a target
+    Syncs brightness between a specific dimmer light and all lights in a target
     area. Any brightness change on one side updates the other side to match.
   domain: automation
   input:
@@ -16,8 +16,8 @@ blueprint:
       selector:
         entity:
           filter:
-            domain: light
-            entity_id: "*dimmer*"
+            - domain: light
+            - entity_id: "*dimmer*"
 
 mode: single
 max_exceeded: silent
