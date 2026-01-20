@@ -304,6 +304,9 @@ triggers:
     property_key: 255
     endpoint: 0
     command_class: 112
+    subtype: >-
+      116[0xff] on endpoint 0 (mmWave Person in the Reporting Area 1 (Read Only)) on
+      endpoint 0
   - trigger: device
     device_id: !input zwave_device
     domain: zwave_js
@@ -312,6 +315,9 @@ triggers:
     property_key: 65280
     endpoint: 0
     command_class: 112
+    subtype: >-
+      116[0xff00] on endpoint 0 (mmWave Person in the Reporting Area 2 (Read Only))
+      on endpoint 0
   - trigger: device
     device_id: !input zwave_device
     domain: zwave_js
@@ -320,6 +326,9 @@ triggers:
     property_key: 16711680
     endpoint: 0
     command_class: 112
+    subtype: >-
+      116[0xff0000] on endpoint 0 (mmWave Person in the Reporting Area 3 (Read
+      Only)) on endpoint 0
   - trigger: device
     device_id: !input zwave_device
     domain: zwave_js
@@ -328,6 +337,9 @@ triggers:
     property_key: 4278190080
     endpoint: 0
     command_class: 112
+    subtype: >-
+      116[0xff000000] on endpoint 0 (mmWave Person in the Reporting Area 4 (Read
+      Only)) on endpoint 0
 condition: >-
   {{ (trigger.platform == 'event' and trigger.event.data.device_id == device_id)
      or trigger.platform == 'device' }}
