@@ -17,6 +17,7 @@ blueprint:
         entity:
           filter:
             - domain: light
+              entity_id: "*dimmer*"
 
 mode: single
 max_exceeded: silent
