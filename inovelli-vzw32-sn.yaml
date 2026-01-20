@@ -342,7 +342,7 @@ triggers:
       Only)) on endpoint 0
 condition: >-
   {{ (trigger.platform == 'event' and trigger.event.data.device_id == device_id)
-     or trigger.platform == 'device' }}
+   or (trigger.device_id is defined and trigger.device_id == device_id) }}
 actions:
   - variables:
       button_id: '{{ trigger.event.data.property_key_name if trigger.platform == "event" else "" }}'
