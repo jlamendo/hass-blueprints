@@ -342,7 +342,7 @@ triggers:
       Only)) on endpoint 0
 condition: >-
   {{ (trigger.platform == 'event' and trigger.event.data.device_id == device_id)
-   or (trigger.device_id is defined and trigger.device_id == device_id) }}
+     or (trigger.device_id is defined and trigger.device_id == device_id) }}
 actions:
   - variables:
       button_id: '{{ trigger.event.data.property_key_name if trigger.platform == "event" else "" }}'
@@ -360,9 +360,15 @@ actions:
            | count }}
       motion_all_off: '{{ motion_on_count == 0 }}'
   - choose:
-      - conditions: '{{ trigger.platform == "device" and (trigger.value | int(0)) > 0 }}'
+      - conditions: >-
+          {{ trigger.platform == "zwave_js.value_updated"
+             and (trigger.device_id is defined)
+             and (trigger.current_value_raw | int(0)) > 0 }}
         sequence: !input 'motion_detected'
-      - conditions: '{{ trigger.platform == "device" and (trigger.value | int(0)) == 0 }}'
+      - conditions: >-
+          {{ trigger.platform == "zwave_js.value_updated"
+             and (trigger.device_id is defined)
+             and (trigger.current_value_raw | int(0)) == 0 }}
         sequence:
           - if:
               - condition: template
