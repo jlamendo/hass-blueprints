@@ -1,0 +1,71 @@
+blueprint:
+  name: Inovelli Dimmer Sync
+  description: >
+    Syncs brightness between an Inovelli Smart Switch's LED bar and all lights in a target
+    area. Any brightness change on one side updates the other side to match.
+  domain: automation
+  input:
+    target_area:
+      name: Target area
+      description: Area containing lights to sync with the dimmer light.
+      selector:
+        area: {}
+    dimmer_light:
+      name: Dimmer light
+      description: Specific light entity containing "dimmer" in its name.
+      selector:
+        entity:
+          filter:
+            domain: light
+            entity_id: "*dimmer*"
+
+mode: single
+max_exceeded: silent
+
+trigger:
+  - platform: event
+    event_type: state_changed
+
+variables:
+  target_area_id: !input target_area
+  dimmer_entity: !input dimmer_light
+  area_light_entities: >-
+    {{ area_entities(target_area_id)
+       | select('match', '^light\\.')
+       | list }}
+  changed_entity: "{{ trigger.event.data.entity_id }}"
+  new_state: "{{ trigger.event.data.new_state }}"
+  old_state: "{{ trigger.event.data.old_state }}"
+  new_brightness: "{{ new_state.attributes.brightness if new_state else none }}"
+  old_brightness: "{{ old_state.attributes.brightness if old_state else none }}"
+  is_area_light: "{{ changed_entity in area_light_entities }}"
+  is_dimmer_light: "{{ changed_entity == dimmer_entity }}"
+
+condition:
+  - condition: template
+    value_template: >-
+      {{ (is_area_light or is_dimmer_light)
+         and new_brightness is not none
+         and new_brightness != old_brightness }}
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ is_dimmer_light }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ area_light_entities }}"
+            data:
+              brightness: "{{ new_brightness }}"
+      - conditions:
+          - condition: template
+            value_template: "{{ is_area_light }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: "{{ dimmer_entity }}"
+            data:
+              brightness: "{{ new_brightness }}"
+
