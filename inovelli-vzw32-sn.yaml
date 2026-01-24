@@ -1,7 +1,7 @@
 # yamllint disable-line rule:line-length
 ---
 blueprint:
-  name: Inovelli Red Series VZW32-SN Red Series Switch (ZWave-JS)
+  name: Inovelli VZW32-SN Presence Switch
   description: Create automations based on scenes for the Inovelli Red Series VZW32-SN Switch.
   domain: automation
   input:
@@ -266,7 +266,7 @@ blueprint:
       default: []
       selector:
         action: {}
-  source_url: https://github.com/jlamendo/hass-blueprints/blob/main/inovelli-vzw32-sn-red-series-switch.yaml
+  source_url: https://github.com/jlamendo/hass-blueprints/edit/main/inovelli-vzw32-sn.yaml
 mode: single
 max_exceeded: silent
 variables:
@@ -274,8 +274,7 @@ variables:
 triggers:
   - trigger: event
     event_type: zwave_js_value_notification
-condition: >-
-  {{ trigger.event.data.device_id == device_id}}
+condition: '{{ trigger.event.data.device_id in device_id }}'
 actions:
   - variables:
       button_id: '{{ trigger.event.data.property_key_name }}'
