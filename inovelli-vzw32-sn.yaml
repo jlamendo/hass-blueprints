@@ -13,29 +13,7 @@ blueprint:
           integration: zwave_js
           manufacturer: Inovelli
           model: VZW32-SN
-          multiple: false
-    motion_detected:
-      name: Motion Detected
-      description: Action to run when motion is detected in any reporting zone.
-      default: []
-      selector:
-        action: {}
-    motion_cleared:
-      name: Motion Cleared
-      description: Action to run when motion is cleared after the delay.
-      default: []
-      selector:
-        action: {}
-    motion_clear_delay:
-      name: Motion Clear Delay (minutes)
-      description: Minutes motion must be clear before the cleared action runs.
-      default: 0
-      selector:
-        number:
-          min: 0
-          max: 120
-          step: 1
-          unit_of_measurement: min
+          multiple: true
     config_button:
       name: Config Press 1x
       description: Action to run, when the config button is pressed one time.
@@ -296,90 +274,13 @@ variables:
 triggers:
   - trigger: event
     event_type: zwave_js_value_notification
-  - trigger: device
-    device_id: !input zwave_device
-    domain: zwave_js
-    type: zwave_js.value_updated.config_parameter
-    property: 116
-    property_key: 255
-    endpoint: 0
-    command_class: 112
-    subtype: >-
-      116[0xff] on endpoint 0 (mmWave Person in the Reporting Area 1 (Read Only)) on
-      endpoint 0
-  - trigger: device
-    device_id: !input zwave_device
-    domain: zwave_js
-    type: zwave_js.value_updated.config_parameter
-    property: 116
-    property_key: 65280
-    endpoint: 0
-    command_class: 112
-    subtype: >-
-      116[0xff00] on endpoint 0 (mmWave Person in the Reporting Area 2 (Read Only))
-      on endpoint 0
-  - trigger: device
-    device_id: !input zwave_device
-    domain: zwave_js
-    type: zwave_js.value_updated.config_parameter
-    property: 116
-    property_key: 16711680
-    endpoint: 0
-    command_class: 112
-    subtype: >-
-      116[0xff0000] on endpoint 0 (mmWave Person in the Reporting Area 3 (Read
-      Only)) on endpoint 0
-  - trigger: device
-    device_id: !input zwave_device
-    domain: zwave_js
-    type: zwave_js.value_updated.config_parameter
-    property: 116
-    property_key: 4278190080
-    endpoint: 0
-    command_class: 112
-    subtype: >-
-      116[0xff000000] on endpoint 0 (mmWave Person in the Reporting Area 4 (Read
-      Only)) on endpoint 0
 condition: >-
-  {{ (trigger.platform == 'event' and trigger.event.data.device_id == device_id)
-     or (trigger.device_id is defined and trigger.device_id == device_id) }}
+  {{ trigger.event.data.device_id == device_id}}
 actions:
   - variables:
-      button_id: '{{ trigger.event.data.property_key_name if trigger.platform == "event" else "" }}'
-      press_count: '{{ trigger.event.data.value if trigger.platform == "event" else "" }}'
-      motion_entities: >-
-        {{ expand(device_entities(device_id))
-           | selectattr('domain', 'eq', 'binary_sensor')
-           | selectattr('attributes.device_class', 'eq', 'motion')
-           | map(attribute='entity_id')
-           | list }}
-      motion_on_count: >-
-        {{ expand(motion_entities)
-           | selectattr('state', 'eq', 'on')
-           | list
-           | count }}
-      motion_all_off: '{{ motion_on_count == 0 }}'
+      button_id: '{{ trigger.event.data.property_key_name }}'
+      press_count: '{{ trigger.event.data.value }}'
   - choose:
-      - conditions: >-
-          {{ trigger.platform == "zwave_js.value_updated"
-             and (trigger.device_id is defined)
-             and (trigger.current_value_raw | int(0)) > 0 }}
-        sequence: !input 'motion_detected'
-      - conditions: >-
-          {{ trigger.platform == "zwave_js.value_updated"
-             and (trigger.device_id is defined)
-             and (trigger.current_value_raw | int(0)) == 0 }}
-        sequence:
-          - if:
-              - condition: template
-                value_template: '{{ motion_all_off }}'
-            then:
-              - delay:
-                  minutes: !input motion_clear_delay
-              - if:
-                  - condition: template
-                    value_template: '{{ motion_all_off }}'
-                then: !input 'motion_cleared'
       - conditions: '{{ button_id == "003" and press_count == "KeyPressed" }}'
         sequence: !input 'config_button'
       - conditions: '{{ button_id == "002" and press_count == "KeyPressed" }}'
